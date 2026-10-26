@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Build and run unit tests
+        run: mvn -B verify
+      - name: End-to-end smoke test
+        run: |
+          java -jar target/redis-clone.jar --port 6380 &
+          sleep 2
+          python3 tests/smoke_test.py 6380
